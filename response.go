@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 // Inherit from an object implementing the http.ResponseWriter interface,
@@ -14,8 +15,9 @@ type ResponseWriter struct {
 
 // Encode the object in JSON, set the content-type header,
 // and call Write.
-func (self *ResponseWriter) WriteJson(v interface{}) error {
+func (self *ResponseWriter) WriteJson(v interface{}, statusCode int) error {
 	self.Header().Set("content-type", "application/json")
+	self.Header().Set("StatusCode", strconv.Itoa(statusCode))
 	var b []byte
 	var err error
 	if self.isIndented {
@@ -36,7 +38,7 @@ func (self *ResponseWriter) WriteJson(v interface{}) error {
 func Error(w *ResponseWriter, error string, code int) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(code)
-	err := w.WriteJson(map[string]string{"Error": error})
+	err := w.WriteJson(map[string]string{"Error": error}, code)
 	if err != nil {
 		panic(err)
 	}

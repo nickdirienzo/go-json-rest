@@ -104,7 +104,7 @@ func (self *statusService) getStatus(w *ResponseWriter, r *Request) {
 		AverageResponseTimeSec: averageResponseTime.Seconds(),
 	}
 
-	err := w.WriteJson(st)
+	err := w.WriteJson(st, http.StatusOK)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 	}

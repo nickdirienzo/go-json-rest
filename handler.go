@@ -153,17 +153,21 @@ func RouteAuthObjectMethod(httpMethod string, pathExp string, objectInstance int
 		panic(fmt.Sprintf(
 			"Cannot find the authMethod %s on %s",
 			authMethod,
-			value
+			value,
 		))
 	}
 
 	routeFunc := func(w *ResponseWriter, r *Request) {
-		err := authFunc.Call([]reflect.Value{
+		ret := authFunc.Call([]reflect.Value{
 			reflect.ValueOf(r),
 		})
-		if err != "" {
-			w.Error(w, err, http.StatusForbidden)
-			return
+		log.Printf("Ret: %v", ret)
+		if len(ret) >= 1 {
+			if ret[0].String() != "" {
+				log.Printf("Authed: %v", ret[0].String())
+				Error(w, ret[0].String(), http.StatusBadRequest)
+				return
+			}
 		}
 		funcValue.Call([]reflect.Value{
 			reflect.ValueOf(w),
