@@ -165,7 +165,7 @@ func RouteAuthObjectMethod(httpMethod string, pathExp string, objectInstance int
 		if len(ret) >= 1 {
 			if ret[0].String() != "" {
 				log.Printf("Authed: %v", ret[0].String())
-				Error(w, ret[0].String(), http.StatusBadRequest)
+				Error(w, ret[0].String(), http.StatusBadRequest, "route")
 				return
 			}
 		}
@@ -247,7 +247,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			origRequest.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
 			strings.ToLower(origRequest.Header.Get("Content-Type")) != "application/json" {
 
-			Error(&writer, "Bad Content-Type, expected 'application/json'", http.StatusUnsupportedMediaType)
+			Error(&writer, "Bad Content-Type, expected 'application/json'", http.StatusUnsupportedMediaType, "generic")
 			return
 		}
 
@@ -256,7 +256,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 		if route == nil {
 			if pathMatched {
 				// no route found, but path was matched: 405 Method Not Allowed
-				Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
+				Error(&writer, "Method not allowed", http.StatusMethodNotAllowed, "generic")
 				return
 			} else {
 				// no route found, the path was not matched: 404 Not Found
