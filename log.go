@@ -23,12 +23,21 @@ func (self *ResourceHandler) logResponseRecord(record *responseLogRecord) {
 		}
 		self.Logger.Printf("%s", b)
 	} else {
-		self.Logger.Printf("%d %v %s %s",
-			record.StatusCode,
-			record.ResponseTime,
-			record.HttpMethod,
-			record.RequestURI,
-		)
+		if record.StatusCode < 300 {
+			self.Logger.Printf("\x1b[32;1m%d %v %s %s\x1b[0m",
+				record.StatusCode,
+				record.ResponseTime,
+				record.HttpMethod,
+				record.RequestURI,
+			)
+		} else if record.StatusCode > 399 {
+			self.Logger.Printf("\x1b[31;1m%d %v %s %s\x1b[0m",
+				record.StatusCode,
+				record.ResponseTime,
+				record.HttpMethod,
+				record.RequestURI,
+			)
+		}
 	}
 }
 
