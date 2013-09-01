@@ -133,6 +133,52 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 	}
 }
 
+// Similar to RouteObjectMethod, but checks authentication before executing 'objectMethod' using the user-defined 'authMethod'.
+// The user-defined 'authMethod' receives a Request object, and is responsible for returning an error string that will be passed
+// to the client along with a 403 code upon failure. If authentication is successful according to 'authMethod', the 'objectMethod'
+// will be allowed to execute.
+func RouteAuthObjectMethod(httpMethod string, pathExp string, objectInstance interface{}, authMethod string, objectMethod string) Route {
+	value := reflect.ValueOf(objectInstance)
+	funcValue := value.MethodByName(objectMethod)
+	if !funcValue.IsValid() {
+		panic(fmt.Sprintf(
+			"Cannot find the object method %s on %s",
+			objectMethod,
+			value,
+		))
+	}
+
+	authFunc := value.MethodByName(authMethod)
+	if !authFunc.IsValid() {
+		panic(fmt.Sprintf(
+			"Cannot find the authMethod %s on %s",
+			authMethod,
+			value
+		))
+	}
+
+	routeFunc := func(w *ResponseWriter, r *Request) {
+		err := authFunc.Call([]reflect.Value{
+			reflect.ValueOf(r),
+		})
+		if err != "" {
+			w.Error(w, err, http.StatusForbidden)
+			return
+		}
+		funcValue.Call([]reflect.Value{
+			reflect.ValueOf(w),
+			reflect.ValueOf(r),
+		})
+	}
+
+	return Route{
+		HttpMethod: httpMethod,
+		PathExp:    pathExp,
+		Func:       routeFunc,
+	}
+
+}
+
 // Define the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 func (self *ResourceHandler) SetRoutes(routes ...Route) error {
