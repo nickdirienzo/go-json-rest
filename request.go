@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -22,6 +23,7 @@ func (self *Request) PathParam(name string) string {
 // Read the request body and decode the JSON using json.Unmarshal
 func (self *Request) DecodeJsonPayload(v interface{}) error {
 	content, err := ioutil.ReadAll(self.Body)
+	log.Println("JSON Received:", string(content))
 	self.Body.Close()
 	if err != nil {
 		return err
